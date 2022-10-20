@@ -4,11 +4,11 @@
 #nfs_base <- "/nfs" #"//dapadfs" "/mnt"
 ##nfs_base <- "//dapadfs" 
 
-src.dir <- "D:/OneDrive - CGIAR/CIAT/Crops/EcoCrop-development/_scripts"
+src.dir <- "D:/_scripts/cc-crop-impacts-central-america"
 
-cropParamFile <- "D:/OneDrive - CGIAR/CIAT/Crops/EcoCrop-development/crop_parameters/crop-parameters-maize-bean-icc.csv"
-cropDir <- "D:/OneDrive - CGIAR/CIAT/Crops/EcoCrop-development/outputs"
-cDir <- "D:/OneDrive - CGIAR/CIAT/Climate & Geodata/cmip5_downscaled/gtm_wcl"
+cropParamFile <- "D:/cenavarro/msc_gis_thesis/03_crop_impacts/crop-parameters/crop-parameters.csv"
+cropDir <- "D:/cenavarro/msc_gis_thesis/03_crop_impacts/outputs"
+cDir <- "D:/cenavarro/msc_gis_thesis/01_baseline/wcl_v21_2_5min"
 #sowDat="//dapadfs/workspace_cluster_3/vulnerability-analysis/EcoCrop-development/Growing_season/2000_sta_2.asc"
 #harDat="//dapadfs/workspace_cluster_3/vulnerability-analysis/EcoCrop-development/Growing_season/end_date.asc"
 #crop <- ""
@@ -33,7 +33,7 @@ cropPar <- cbind(Crop=cropNames, cropPar)
 nTest <- nrow(cropPar) #Number of test into file crop parameters
 
 #loop crops
-for (n in 15:nTest){
+for (n in 1:nTest){
   #n <- 1
   testName <- paste(cropPar$Crop[n])  #Name of the tests
   
