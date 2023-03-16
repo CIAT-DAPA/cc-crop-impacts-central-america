@@ -6,14 +6,15 @@
 
 src.dir <- "D:/_scripts/cc-crop-impacts-central-america"
 
-cropParamFile <- "D:/cenavarro/msc_gis_thesis/03_crop_impacts/crop-parameters/crop-parameters.csv"
+cropParamFile <- "D:/cenavarro/msc_gis_thesis/03_crop_impacts/crop-parameters/crop-parameters-int.csv"
 cropDir <- "D:/cenavarro/msc_gis_thesis/03_crop_impacts/outputs"
 cDir <- "D:/cenavarro/msc_gis_thesis/01_baseline/wcl_v21_2_5min"
 #sowDat="//dapadfs/workspace_cluster_3/vulnerability-analysis/EcoCrop-development/Growing_season/2000_sta_2.asc"
 #harDat="//dapadfs/workspace_cluster_3/vulnerability-analysis/EcoCrop-development/Growing_season/end_date.asc"
 #crop <- ""
+## modificacion 
 
-source(paste(src.dir,"/src/EcoCrop-model_WCl.R",sep=""))
+source(paste(src.dir,"/src-ecocrop/EcoCrop-model_WCl.R",sep=""))
 
 
 #######################################
@@ -22,7 +23,7 @@ source(paste(src.dir,"/src/EcoCrop-model_WCl.R",sep=""))
 
 # Reading crop parameters from parameter file
 cropPar <- read.csv(cropParamFile, header=T)
-parNames <- paste(cropPar$X)
+parNames <- paste(cropPar$Parameters)
 cropNames <- names(cropPar)[2:ncol(cropPar)]
 cropPar <- as.data.frame(t(cropPar[,2:ncol(cropPar)]))
 row.names(cropPar) <- 1:nrow(cropPar)
@@ -62,7 +63,7 @@ for (n in 1:nTest){
                     #sowDat=sowDat,
                     #harDat=harDat,
                     cropname=paste(testName, sep=""),
-                    ext="",
+                    ext=".tif",
                     cropClimate=F
                     )
     
@@ -70,3 +71,4 @@ for (n in 1:nTest){
     cat(paste("Processed : ",  testName, "\n", sep=""))
   }
 }
+

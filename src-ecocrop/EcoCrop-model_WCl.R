@@ -73,11 +73,11 @@ suitCalc <- function(climPath='', sowDat='', harDat='', Gmin=90,Gmax=90,Tkmp=0,T
   
   #Creating the stack of the whole list of variables
   if (is.na(Rmin)) {
-    climateStack <- stack(stack(paste(climPath, "/tmean_", c(1:12), ext, sep="")), 
-                          stack(paste(climPath, "/tmin_", c(1:12), ext, sep="")))
+    climateStack <- stack(stack(paste(climPath, "/tmean_", c(1:12), ext, sep=""))*10, 
+                          stack(paste(climPath, "/tmin_", c(1:12), ext, sep=""))*10) 
   } else {
-    climateStack <- stack(stack(paste(climPath, "/tmean_", c(1:12), ext, sep="")), 
-                          stack(paste(climPath, "/tmin_", c(1:12), ext, sep="")), 
+    climateStack <- stack(stack(paste(climPath, "/tmean_", c(1:12), ext, sep=""))*10, 
+                          stack(paste(climPath, "/tmin_", c(1:12), ext, sep=""))*10, 
                           stack(paste(climPath, "/prec_", c(1:12), ext, sep="")))
   }
   
