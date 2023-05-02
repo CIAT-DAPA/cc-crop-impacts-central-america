@@ -28,16 +28,16 @@ if (!file.exists(oDir)) {dir.create(oDir)}
 for (var in varList){
   
   stk_crop <- stack(paste0(bDir, "/", var, "_", 1:12, ".tif"))
-  # stk_crop <- mask(crop(stk, extent(mask)), mask)
+  stk_crop <- mask(crop(stk_crop, extent(mask)), mask)
   
   if (var == "prec"){
     
-    stk_crop[which(stk_crop[]>1000)]=1000
+    stk_crop[which(stk_crop[]>800)]=800
     
     plot <- setZ(stk_crop, id)
     names(plot) <- id
     
-    zvalues <- seq(0, 900, 50) # Define limits
+    zvalues <- seq(0, 800, 50) # Define limits
     myTheme <- BuRdTheme() # Define squeme of colors
     myTheme$regions$col=colorRampPalette(c("lightgoldenrodyellow", "skyblue1", "blue", "darkblue", "darkmagenta"))(length(zvalues)-1) # Set new colors
     myTheme$strip.border$col = "white" # Eliminate frame from maps
@@ -63,7 +63,7 @@ for (var in varList){
   }
   
   # Save to file
-  tiff(paste(oDir, "/plot_monthly_clim_", var, ".tif", sep=""), width=2400, height=1200, pointsize=8, compression='lzw',res=200)
+  tiff(paste(oDir, "/plot_monthly_clim_", var, ".tif", sep=""), width=2000, height=1200, pointsize=8, compression='lzw',res=200)
   
   print(levelplot(plot, at = zvalues, scales = list(draw=FALSE), layout=c(4, 3), xlab="", ylab="", par.settings = myTheme, 
                   colorkey = list(space = "bottom", width=1.2, height=1)
@@ -94,16 +94,16 @@ id_mod <-c("DEF", "MAM", "JJA", "SON")
 for (var in varList){
   
   stk_crop <- stack(paste0(bDir, "/", var, "_", id, ".tif"))
-  # stk_crop <- mask(crop(stk, extent(mask)), mask)
+  stk_crop <- mask(crop(stk_crop, extent(mask)), mask)
   
   if (var == "prec"){
     
-    stk_crop[which(stk_crop[]>2500)]=2500
+    stk_crop[which(stk_crop[]>2000)]=2000
     
     plot <- setZ(stk_crop, id_mod)
     names(plot) <- toupper(id_mod)
     
-    zvalues <- seq(0, 2500, 100) # Define limits
+    zvalues <- seq(0, 2000, 100) # Define limits
     myTheme <- BuRdTheme() # Define squeme of colors
     myTheme$regions$col=colorRampPalette(c("khaki1", "skyblue1", "blue", "darkblue", "darkmagenta"))(length(zvalues)-1) # Set new colors
     myTheme$strip.border$col = "white" # Eliminate frame from maps
@@ -126,7 +126,7 @@ for (var in varList){
     
   }
   
-  tiff(paste(oDir, "/plot_seasonal_clim_", var, ".tif", sep=""), width=2000, height=1200, pointsize=8, compression='lzw',res=200)
+  tiff(paste(oDir, "/plot_seasonal_clim_", var, ".tif", sep=""), width=1800, height=1300, pointsize=8, compression='lzw',res=200)
   
   print(levelplot(plot, at = zvalues, 
                   scales = list(draw=FALSE), 
@@ -157,7 +157,7 @@ if (!file.exists(oDir)) {dir.create(oDir)}
 for (var in varList){
   
   stk_crop <- stack(paste0(bDir, "/", var, "_", id, ".tif"))
-  # stk_crop <- mask(crop(stk, extent(mask)), mask)
+  stk_crop <- mask(crop(stk_crop, extent(mask)), mask)
   
   if (var == "prec"){
     
@@ -190,7 +190,7 @@ for (var in varList){
     
   }
   
-  tiff(paste(oDir, "/plot_annual_clim_", var, ".tif", sep=""), width=2200, height=1200, pointsize=8, compression='lzw',res=200)
+  tiff(paste(oDir, "/plot_annual_clim_", var, ".tif", sep=""), width=1800, height=1200, pointsize=8, compression='lzw',res=200)
   
   print(levelplot(plot, at = zvalues, 
                   scales = list(draw=FALSE), 

@@ -3,7 +3,7 @@
 #2011
 
 
-repoDir <- "D:/cenavarro/msc_gis_thesis/00_scripts"
+repoDir <- "D:/_scripts/cc-crop-impacts-central-america"
 srcDir <- paste(repoDir, "/baseline_comparison", sep="")
 
 setwd(srcDir)
@@ -29,12 +29,12 @@ md <- paste(mDataDir, "/gcm_data/1970_2000", sep="")
 gcmList <- list.files(md)
 cat(gcmList)
 cd <- paste(mDataDir, "/wcl_v21_2_5min", sep="")
-shd <- "D:/cenavarro/msc_gis_thesis/00_admin_data"
-# shd <- "D:/cenavarro/msc_gis_thesis/00_admin_data/by_country"
+# shd <- "D:/cenavarro/msc_gis_thesis/00_admin_data"
+shd <- "D:/cenavarro/msc_gis_thesis/00_admin_data/by_country"
 
-cList <- c("CAMEXCA")
-# cList <- c("BHS", "BLZ", "CRI", "CUB", "DOM", "GTM", "HND", "HTI", "JAM", "MEX", "NIC", "PAN", "PRI", "SLV")
-# cList <- c("NIC", "PAN", "PRI", "SLV")
+# cList <- c("CAMEXCA")
+# cList <- c("BHS", "BLZ", "CRI", "CUB", "DOM", "GTM", "HND", "HTI", "JAM", "NIC", "PAN", "PRI", "SLV", "NIC", "PAN", "PRI", "SLV")
+cList <- c("MEX")
 mam <- paste(oDir, "/wcl-vs-gcm/MAM", sep="")
 son <- paste(oDir, "/wcl-vs-gcm/SON", sep="")
 jja <- paste(oDir, "/wcl-vs-gcm/JJA", sep="")
@@ -93,7 +93,7 @@ for (ctry in cList) {
 
 library(rgdal)
 
-repoDir <- "D:/cenavarro/msc_gis_thesis/00_scripts"
+repoDir <- "D:/_scripts/cc-crop-impacts-central-america"
 srcDir <- paste(repoDir, "/baseline_comparison", sep="")
 
 setwd(srcDir)
@@ -110,12 +110,12 @@ md <- paste(mDataDir, "/gcm_data/1970_2000", sep="")
 gcmList <- list.files(md)
 cat(gcmList)
 cd <- paste(mDataDir, "/ghcn_data", sep="")
-shd <- "D:/cenavarro/msc_gis_thesis/00_admin_data"
-# shd <- "D:/cenavarro/msc_gis_thesis/00_admin_data/by_country"
+# shd <- "D:/cenavarro/msc_gis_thesis/00_admin_data"
+shd <- "D:/cenavarro/msc_gis_thesis/00_admin_data/by_country"
 
-cList <- c("CAMEXCA")
-# cList <- c("BHS", "CRI", "CUB", "DOM", "GTM", "HND", "JAM", "MEX", "NIC", "PAN", "SLV")
-# cList <- c("BLZ", "HTI", "PRI")
+# cList <- c("CAMEXCA")
+# cList <- c("BHS", "BLZ", "CRI", "CUB", "DOM", "GTM", "HND", "HTI", "JAM", "NIC", "PAN", "PRI", "SLV", "NIC", "PAN", "PRI", "SLV")
+cList <- c("MEX")
 
 mam <- paste(oDir, "/whst-vs-gcm/MAM", sep="")
 son <- paste(oDir, "/whst-vs-gcm/SON", sep="")
@@ -165,14 +165,15 @@ for (variable in variableLs){
   dataSummary(bDir, dataset, variable)
 }
 
+
 f.dir <- "D:/cenavarro/msc_gis_thesis/01_baseline/skill_gcm/_summaries"
 generateBoxplots(fd=f.dir)
 for (vn in variableLs) {
   for (dset in c("whst", "wcl")) {
     for (prd in c("ANNUAL","DJF","JJA","MAM","SON")) {
       if (file.exists(paste(f.dir,"/",vn,"-",dset,"-vs-gcm-summaryMetrics.csv",sep=""))) {
-        createColoured(fDir=f.dir, variable=vn, dataset=dset, month="total", period=prd, metric="R2.FORCED")
-      }
+          createColoured(fDir=f.dir, variable=vn, dataset=dset, month="total", period=prd, metric="R2.FORCED")
+        }
     }
   }
 }

@@ -17,15 +17,15 @@ require(RColorBrewer)
 #### 01 Plots anomalies by months ####
 ######################################
 
-sspList <- c("ssp_126", "ssp_245", "ssp_585") #"ssp_370"
-# sspList <- c("ssp_126")
+# sspList <- c("ssp_126", "ssp_245", "ssp_585") #"ssp_370"
+sspList <- c("ssp_126")
 baseDir <- "D:/cenavarro/msc_gis_thesis/02_climate_change/camexca_2_5min_anom_ens"
 # baseDir <- "D:/cenavarro/msc_gis_thesis/02_climate_change/camexca_2_5min_anom"
 perList <- c("2030s", "2050s", "2070s") #, "2090s")
 varList <- c("prec", "tmin", "tmax", "tmean") 
 id <- c("Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic")
 mask <- readOGR("D:/cenavarro/msc_gis_thesis/00_admin_data/CAMEXCA_adm0.shp")
-oDir <- "D:/cenavarro/msc_gis_thesis/02_climate_change/_plots"
+oDir <- "D:/cenavarro/msc_gis_thesis/02_climate_change/evaluations/plots"
 metrics <- c("avg", "q25", "q75")
 
 if (!file.exists(oDir)) {dir.create(oDir, recursive=T)}
@@ -41,6 +41,7 @@ for (ssp in sspList) {
       for (metric in metrics){
         
         stk <- stack(paste0(baseDir, "/", ssp, "/", per, "/", var, "_", 1:12, "_", metric, ".tif"))
+        stk <- mask(crop(stk, extent(mask)), mask)
         oPlot <- paste(oDir, "/plot_monthly_anom_", var, "_", ssp, "_ensemble_", per, "_", metric, ".tif", sep="")
         
         
@@ -82,7 +83,7 @@ for (ssp in sspList) {
           } 
           
           # Save to file
-          tiff(oPlot, width=2400, height=1200, pointsize=8, compression='lzw',res=200)
+          tiff(oPlot, width=2000, height=1200, pointsize=8, compression='lzw',res=200)
           print(levelplot(plot, at = zvalues, scales = list(draw=FALSE), layout=c(4, 3), xlab="", ylab="", par.settings = myTheme, 
                           colorkey = list(space = "bottom", width=1.2, height=1)
           ) 
@@ -94,9 +95,10 @@ for (ssp in sspList) {
       }
       
       
-      ## Standar deviation plot
+      ## Standard deviation plot
       
       stkStd <- stack(paste0(baseDir, "/", ssp, "/", per, "/", var, "_", 1:12, "_std.tif"))
+      stkStd <- mask(crop(stkStd, extent(mask)), mask)
       oPlot <- paste(oDir, "/plot_monthly_anom_", var, "_", ssp, "_ensemble_", per, "_std.tif", sep="")
       
       if (!file.exists(oPlot)) {
@@ -133,7 +135,7 @@ for (ssp in sspList) {
         myTheme$axis.line$col = 'white' # Eliminate frame from maps
         
         # Save to file
-        tiff(oPlot, width=2400, height=1200, pointsize=8, compression='lzw',res=200)
+        tiff(oPlot, width=2000, height=1200, pointsize=8, compression='lzw',res=200)
         print(levelplot(plot, at = zvalues, scales = list(draw=FALSE), layout=c(4, 3), xlab="", ylab="", par.settings = myTheme, 
                         colorkey = list(space = "bottom", width=1.2, height=1)
         ) 
@@ -152,12 +154,14 @@ for (ssp in sspList) {
 
 
 #######################################
-#### 01 Plots anomalies by seasons ####
+#### 02 Plots anomalies by seasons ####
 #######################################
 
 seasons <- c("djf", "mam", "jja", "son", "ann")
 id <- rep(c("DEF ", "MAM", "JJA", "SON", "ANUAL"), length(perList))
-
+varList <- c("prec") 
+# sspList <- c("ssp_126", "ssp_245", "ssp_585") #"ssp_370"
+sspList <- c("ssp_585")
 
 for (ssp in sspList) {
   
@@ -170,6 +174,7 @@ for (ssp in sspList) {
     for (metric in metrics){
       
       stk <- stack(paste0(baseDir, "/", ssp, "/", perSeas[,2], "/", var, "_", perSeas[,1], "_", metric,".tif"))
+      stk <- mask(crop(stk, extent(mask)), mask)
       oPlot <- paste(oDir, "/plot_season_anom_", var, "_", ssp, "_", metric, ".tif", sep="")
       
       if (!file.exists(oPlot)) {
@@ -177,13 +182,13 @@ for (ssp in sspList) {
         if (var == "prec"){
           
           stk_crop <- stk * 100
-          stk_crop[stk_crop > 50] = 50
-          stk_crop[stk_crop < (-50)] = (-50)
+          stk_crop[stk_crop > 30] = 30
+          stk_crop[stk_crop < (-30)] = (-30)
           
           plot <- setZ(stk_crop, id)
           names(plot) <- id
           
-          zvalues <- seq(-50, 50, 5) # Define limits
+          zvalues <- seq(-30, 30, 5) # Define limits
           myTheme <- BuRdTheme() # Define squeme of colors
           myTheme <- rasterTheme(region=brewer.pal('RdBu', n=9))
           myTheme$strip.border$col = "white" # Eliminate frame from maps
@@ -208,7 +213,7 @@ for (ssp in sspList) {
         } 
         
         
-        tiff(oPlot, width=3600, height=1400, compression='lzw',res=200)
+        tiff(oPlot, width=3000, height=1300, compression='lzw',res=200)
         
         print(levelplot(plot, at = zvalues,  
                         scales = list(draw=FALSE), 
@@ -237,6 +242,7 @@ for (ssp in sspList) {
     ## Standar deviation
     
     stk <- stack(paste0(baseDir, "/", ssp, "/", perSeas[,2], "/", var, "_", perSeas[,1], "_std.tif"))
+    stk <- mask(crop(stk, extent(mask)), mask)
     oPlot <- paste(oDir, "/plot_season_anom_", var, "_", ssp, "_std.tif", sep="")
     
     if (!file.exists(oPlot)) {
@@ -244,12 +250,12 @@ for (ssp in sspList) {
       if (var == "prec"){
         
         stk_crop <- stk * 100
-        stk_crop[stk_crop > 40] = 40
+        stk_crop[stk_crop > 30] = 30
 
         plot <- setZ(stk_crop, id)
         names(plot) <- id
         
-        zvalues <- seq(-50, 50, 5) # Define limits
+        zvalues <- seq(0, 30, 5) # Define limits
 
         
       } else {
@@ -269,7 +275,7 @@ for (ssp in sspList) {
       myTheme$strip.border$col = "white" # Eliminate frame from maps
       myTheme$axis.line$col = 'white' # Eliminate frame from maps
       
-      tiff(oPlot, width=3600, height=1400, compression='lzw',res=200)
+      tiff(oPlot, width=3000, height=1300, compression='lzw',res=200)
       
       print(levelplot(plot, at = zvalues,  
                       scales = list(draw=FALSE), 

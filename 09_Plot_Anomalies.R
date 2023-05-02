@@ -42,6 +42,7 @@ for (ssp in sspList) {
         if (!file.exists(oPlot)) {
           
           stk <- stack(paste0(baseDir, "/", ssp, "/", gcm, "/", per, "/", var, "_", 1:12, ".tif"))
+          stk <- mask(crop(stk, extent(mask)), mask)
           
           if (var == "prec"){
             
@@ -79,7 +80,7 @@ for (ssp in sspList) {
           } 
           
           # Save to file
-          tiff(oPlot, width=2400, height=1200, pointsize=8, compression='lzw',res=200)
+          tiff(oPlot, width=2000, height=1200, pointsize=8, compression='lzw',res=200)
           print(levelplot(plot, at = zvalues, scales = list(draw=FALSE), layout=c(4, 3), xlab="", ylab="", par.settings = myTheme, 
                           colorkey = list(space = "bottom", width=1.2, height=1)
           ) 
