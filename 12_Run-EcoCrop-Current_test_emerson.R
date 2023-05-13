@@ -4,15 +4,13 @@
 #nfs_base <- "/nfs" #"//dapadfs" "/mnt"
 ##nfs_base <- "//dapadfs" 
 
-src.dir <- "D:/_scripts/cc-crop-impacts-central-america"
-
-cropParamFile <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/crop-parameters/crop-parameters_ej3.csv"
+src.dir <- "E:/Tortillas/TORII/EcoCrop_runs/_scripts"
+cropParamFile <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/crop-parameters/crop-parameters-all.csv"
 cropDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/outputs"
 cDir <- "E:/Tortillas/TORII/EcoCrop_runs/01_baseline/wcl_v21_2_5min"
 #sowDat="//dapadfs/workspace_cluster_3/vulnerability-analysis/EcoCrop-development/Growing_season/2000_sta_2.asc"
 #harDat="//dapadfs/workspace_cluster_3/vulnerability-analysis/EcoCrop-development/Growing_season/end_date.asc"
 #crop <- ""
-## modificacion 
 
 source(paste(src.dir,"/src-ecocrop/EcoCrop-model_WCl.R",sep=""))
 
@@ -35,7 +33,7 @@ nTest <- nrow(cropPar) #Number of test into file crop parameters
 
 #loop crops
 for (n in 1:nTest){
-  #n <- 1
+  # n <- 1
   testName <- paste(cropPar$Crop[n])  #Name of the tests
   
   #Source scripts and libraries
@@ -45,9 +43,9 @@ for (n in 1:nTest){
   if (!file.exists(paste(cropDir, "/" , testName, "/runs/", testName, "_suit.tif", sep=""))) {
     
     #Run principal function
-    cat(paste("Processing : ",  testName, "\n", sep=""))
+    cat(paste("Processing : ",  testName, "/n", sep=""))
     
-    eco <- suitCalc(climPath=cDir, 
+    eco <- suitCalc(climPath=cDir,
                     Gmin=cropPar$Gmin[n], #Minimum lenght of the growing season 
                     Gmax=cropPar$Gmax[n], #Maximum lenght of the growing season
                     Tkmp=cropPar$Tkmp[n], #Killing temperature  
@@ -68,7 +66,6 @@ for (n in 1:nTest){
                     )
     
   } else {
-    cat(paste("Processed : ",  testName, "\n", sep=""))
+    cat(paste("Processed : ",  testName, "/n", sep=""))
   }
 }
-
