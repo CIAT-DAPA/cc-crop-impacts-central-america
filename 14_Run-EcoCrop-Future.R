@@ -1,11 +1,10 @@
 # source("D:/_scripts/cc-crop-impacts-central-america/13_Run-EcoCrop-Future.R")
 # n <- 1 #crop_id
 
-
-src.dir <- "D:/_scripts/cc-crop-impacts-central-america"
-cropParamFile <- "D:/cenavarro/msc_gis_thesis/03_crop_impacts/crop-parameters/crop-parameters-int_selcrops.csv"
-cropDir <- "D:/cenavarro/msc_gis_thesis/03_crop_impacts/outputs"
-cDir <- "D:/cenavarro/msc_gis_thesis/02_climate_change/camexca_2_5min"
+src.dir <- "E:/_scripts/cc-crop-impacts-central-america"
+cropParamFile <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/crop-parameters/crop-parameters-select.csv"
+cropDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/outputs"
+cDir <- "E:/Tortillas/TORII/EcoCrop_runs/02_climate_change/camexca_2_5min"
 
 sspLs <- c("ssp_126", "ssp_245", "ssp_585")
 periodLs <- c("2030s", "2050s", "2070s")
@@ -42,7 +41,7 @@ for (ssp in sspLs){
     for (period in periodLs){
       
       #loop crops
-      # for (n in 1:nTest){
+      for (n in 1:nTest){
         
         testName <- paste(cropPar$Crop[n])  #Name of the tests
         
@@ -78,7 +77,7 @@ for (ssp in sspLs){
         } else {
           cat(paste("Processed : ",  testName, "\n", sep=""))
         }
-      # }  
+      }
     }  
     
   }
