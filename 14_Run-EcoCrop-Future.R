@@ -1,3 +1,7 @@
+# Author: Carlos Navarro
+# UNIGIS 2023
+# Purpose: Run EcoCrop for future conditions
+
 # source("D:/_scripts/cc-crop-impacts-central-america/13_Run-EcoCrop-Future.R")
 # n <- 1 #crop_id
 
@@ -33,12 +37,13 @@ nTest <- nrow(cropPar) #Number of test into file crop parameters
 #loop periods and ssps
 
 for (ssp in sspLs){
-
+  # ssp <- "ssp_126"
+  
   gcmList <- list.dirs(paste0(cDir, "/", ssp), recursive = FALSE, full.names = FALSE)
   
-  for (gcm in gcmList){
+  for (period in periodLs){
     
-    for (period in periodLs){
+    for (gcm in gcmList){
       
       #loop crops
       for (n in 1:nTest){
@@ -52,7 +57,7 @@ for (ssp in sspLs){
         if (!file.exists(paste(cropDir, "/", testName, "/runs-", ssp, "/", gcm , "/", period, "/", testName, "_suit.tif", sep=""))) {
           
           #Run principal function
-          cat("Processing : ",  testName, ssp, gcm, "\n")
+          cat("Processing : ",  testName, ssp, gcm, period, "\n")
           
           eco <- suitCalc(climPath=paste0(cDir, "/", ssp, "/", gcm, "/", period), 
                           Gmin=cropPar$Gmin[n], #Minimum lenght of the growing season 
@@ -82,6 +87,6 @@ for (ssp in sspLs){
     
   }
   
- 
+  
 }
 

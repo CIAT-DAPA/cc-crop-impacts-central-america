@@ -17,7 +17,7 @@ require(sp)
 require(stringr)
 require(latticeExtra)
 require(sf)
-
+require(ncdf4)
 
 # Set parameters
 bDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/outputs"
@@ -27,6 +27,7 @@ cropParamFile <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/crop-parameter
 cropEquivFile <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/crop-parameters/Ecocorop_Parameters_TOR2.csv"
 occDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/ocurrences"
 ispamDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/ocurrences/SPAM2010V1r0"
+cropgDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/ocurrences/cropgrids"
 # threshold <- 0.001 #Very High data
 # threshold <- 0.01 #Very High data
 # threshold <- 0.05 #High data
@@ -43,7 +44,7 @@ parNames <- paste(cropPar$Parameters)
 cropLs <- names(cropPar)[2:ncol(cropPar)]
 cropEqLs <- read.csv(cropEquivFile, header = T)
 
-oDirShp <- paste0(occDir, "/merged")
+oDirShp <- paste0(occDir, "/merged_all")
 if(!file.exists(oDirShp)){dir.create(oDirShp, recursive = T)}
 
 for(threshold in thresLs){
@@ -93,6 +94,19 @@ for(threshold in thresLs){
           
         }
         
+        # Load cropgrid presence area 
+        if(file.exists(paste0(cropgDir, "/CROPGRIDSv1.05_", cropEq$Monfreda, ".nc"))){
+          
+          cropg <- raster(paste0(cropgDir, "/CROPGRIDSv1.05_", cropEq$Monfreda, ".nc"), layer="harvarea")
+          cropg <- mask(crop(cropg, extent(mask)), mask_ctr)/8574.76 #to calculate fraction area
+          cropg[which(cropg[] <= threshold)] = NA
+          cropgP <- rasterToPoints(cropg)
+          # points(rasterToPoints(ispam), cex=0.1, col = "blue")
+          
+          cat("   - Cropgrid ocurrence data loaded \n")
+          
+        }
+        
         # Load ispam presence area (if exits)
         if(file.exists(paste0(ispamDir, "/spam2010V2r0_global_H_", toupper(cropEq$spam_2010), "_R.tif"))){
           
@@ -116,6 +130,10 @@ for(threshold in thresLs){
         sPts <- monfP[,1:2]
         if(exists("occP")){
           sPts <- rbind(sPts, occP[,1:2]) 
+        }
+        sPts <- cropgP[,1:2]
+        if(exists("cropgP")){
+          sPts <- rbind(sPts, cropgP[,1:2]) 
         }
         if(exists("ispamP")){
           sPts <- rbind(sPts, ispamP[,1:2]) 

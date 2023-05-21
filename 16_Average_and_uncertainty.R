@@ -39,7 +39,7 @@ uncertain <- function(x) {
 
 #Block calculation
 #Final grid naming and creation
-uncertainties <- function(instack, outFolder="F:/EcoCrop-development/testing", crop, rcp, period) {
+uncertainties <- function(instack, outFolder="F:/EcoCrop-development/testing", crop, ssp, period) {
   
   if (!file.exists(outFolder)) {dir.create(outFolder, recursive = T)}
   
@@ -81,12 +81,12 @@ uncertainties <- function(instack, outFolder="F:/EcoCrop-development/testing", c
   pbClose(pb)
   
   #Writing data
-  avgName <- paste(outFolder, "/mean_", crop, "_", rcp, "_", period, ".tif", sep=""); rsmean <- writeRaster(rsmean, avgName, overwrite=TRUE)
-  sdName <- paste(outFolder, "/sd_", crop, "_", rcp, "_", period, ".tif", sep=""); rssd <- writeRaster(rssd, sdName, overwrite=TRUE)
-  b25Name <- paste(outFolder, "/mean-bottom25p_", crop, "_", rcp, "_", period, ".tif", sep=""); rsb25 <- writeRaster(rsb25, b25Name, overwrite=TRUE)
-  t25Name <- paste(outFolder, "/mean-top25p_", crop, "_", rcp, "_", period, ".tif", sep=""); rst25 <- writeRaster(rst25, t25Name, overwrite=TRUE)
-  stName <- paste(outFolder, "/agreement_", crop, "_", rcp, "_", period, ".tif", sep=""); rsst <- writeRaster(rsst, stName, overwrite=TRUE)
-  stpName <- paste(outFolder, "/agreement-percent_", crop, "_", rcp, "_", period, ".tif", sep=""); rsstp <- writeRaster(rsstp, stpName, overwrite=TRUE)
+  avgName <- paste(outFolder, "/mean_", crop, "_", ssp, "_", period, ".tif", sep=""); rsmean <- writeRaster(rsmean, avgName, overwrite=TRUE)
+  sdName <- paste(outFolder, "/sd_", crop, "_", ssp, "_", period, ".tif", sep=""); rssd <- writeRaster(rssd, sdName, overwrite=TRUE)
+  b25Name <- paste(outFolder, "/mean-bottom25p_", crop, "_", ssp, "_", period, ".tif", sep=""); rsb25 <- writeRaster(rsb25, b25Name, overwrite=TRUE)
+  t25Name <- paste(outFolder, "/mean-top25p_", crop, "_", ssp, "_", period, ".tif", sep=""); rst25 <- writeRaster(rst25, t25Name, overwrite=TRUE)
+  stName <- paste(outFolder, "/agreement_", crop, "_", ssp, "_", period, ".tif", sep=""); rsst <- writeRaster(rsst, stName, overwrite=TRUE)
+  stpName <- paste(outFolder, "/agreement-percent_", crop, "_", ssp, "_", period, ".tif", sep=""); rsstp <- writeRaster(rsstp, stpName, overwrite=TRUE)
 }
 
 # plot(density(x),ylim=c(0,0.41),col="red",lwd=2)
@@ -97,23 +97,26 @@ uncertainties <- function(instack, outFolder="F:/EcoCrop-development/testing", c
 
 
 #Creating the stack
-iDir <- "Z:/WORK_PACKAGES/WP2/05_EcoCrop_runs/outputs"
-oDir <- "Z:/WORK_PACKAGES/WP2/05_EcoCrop_runs/uncertainties"
-cropLs <- c("cocoa", "sugar_cane", "sugar_cane_eitzinger", "panela_cane", "coffee", "coffee_eitzinger", "palmito")
-rcpLs <- c("rcp26", "rcp45", "rcp60", "rcp85")
-periodLs <- c("2020_2049", "2040_2069", "2070_2099")
+iDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/outputs"
+oDir <-"E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/uncertainties"
+# cropLs <- c("cocoa", "sugar_cane", "sugar_cane_eitzinger", "panela_cane", "coffee", "coffee_eitzinger", "palmito")
+sspLs <- c("ssp_126", "ssp_245", "ssp_585")
+periodLs <- c("2030s", "2050s", "2070s")
+cropParamFile <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/crop-parameters/crop-parameters-select.csv"
+cropPar <- read.csv(cropParamFile, header=T)
+cropLs <- names(cropPar)[-1]
 
 for(crop in cropLs){
 
-  for (rcp in rcpLs){
+  for (ssp in sspLs){
   
-  rcpDir <- paste0(iDir, "/", crop, "/runs-", rcp)
-  gcmList <- list.files(rcpDir, full.names = F, include.dirs = F)
+  sspDir <- paste0(iDir, "/", crop, "/runs-", ssp)
+  gcmList <- list.files(sspDir, full.names = F, include.dirs = F)
   
   for(period in periodLs){
   
-    gcmstack <- stack(paste0(rcpDir, "/", gcmList, "/", period, "/", crop, "_suit.tif"))
-    uncertainties(gcmstack, oDir, crop, rcp, period)
+    gcmstack <- stack(paste0(sspDir, "/", gcmList, "/", period, "/", crop, "_suit.tif"))
+    uncertainties(gcmstack, oDir, crop, ssp, period)
   }
     
   }

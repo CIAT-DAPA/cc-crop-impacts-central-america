@@ -126,5 +126,9 @@ for(crop in cropLs){
     }
   }
   
+  suitH <- mask(crop(raster(paste0(bDir, "/", crop, "/runs/", crop, "_suit.tif")), raster(msk)), raster(msk))
+  suitH[which(suitH[] == 0)] = NA
+  writeRaster(suitH, paste0(bDir, "/", crop, "/runs/", crop, "_suit_cut.tif"))
+  
 }
 
