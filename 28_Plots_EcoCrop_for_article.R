@@ -11,19 +11,22 @@ require(raster)
 require(rgdal)
 require(rasterVis)
 require(maptools)
+require(stringr)
 
 # Set params
-bDir <- "D:/OneDrive - CGIAR/CIAT/Articles/mbeltran_crop_exposure/maps"
-oDir <- bDir
+bDir <- "/Users/cenavarro/My Drive (cenavarror@gmail.com)/MSc GIS+/Tesis/03_ecocrop/uncertainties"
+oDir <- "/Users/cenavarro/My Drive (cenavarror@gmail.com)/MSc GIS+/Tesis/00_maps"
 zDir <- bDir
 
-rcpLs <- c("rcp26","rcp45","rcp60","rcp85")
-yearLs <- c("2020_2049","2040_2069") #, "2070_2099")
-# grdLs <- expand.grid(yearLs,rcpLs)
+sspLs <- c("ssp_126", "ssp_245", "ssp_585")
+yearLs <- c("2030s", "2050s", "2070s")
+# grdLs <- expand.grid(yearLs,sspLs)
 
 # List of simulated crops 
-cropLs <- c("cassava", "maize","plantain")
-cropNameLs <- c("Cassava", "Maize", "Plantain")
+cropParamFile <- "/Users/cenavarro/My Drive (cenavarror@gmail.com)/MSc GIS+/Tesis/03_ecocrop/crop-parameters/crop-parameters-select.csv"
+cropPar <- read.csv(cropParamFile, header=T)
+cropLs <- names(cropPar)[-1]
+cropNameLs <- str_to_title(cropLs)
 grdLs <- expand.grid(yearLs,cropLs)
 
 
@@ -32,16 +35,16 @@ mask <- readOGR( paste0(zDir, "/Eco-Region del Napo.shp"), layer = paste0("Eco-R
 # ext <- extent(extent(mask)@xmin - buf, extent(mask)@xmax + buf, extent(mask)@ymin - buf, extent(mask)@ymax + buf)
 lim <- extent(-80, -71, -11.5, 2.5)
 
-for (rcp in rcpLs){
+for (ssp in sspLs){
   
   # Load current suitability 
-  rsStk <- stack(paste0(bDir, "/", grdLs[,2], "/diffnapo_", rcp, "-", grdLs[,1], ".tif"))
+  rsStk <- stack(paste0(bDir, "/", grdLs[,2], "/diffnapo_", ssp, "-", grdLs[,1], ".tif"))
   
   rsStk <- crop(rsStk, lim)
   adm_lim <- crop(adm, lim)
   # rsStk <- mask(crop(rsStk, extent(mask)), mask)
   
-  if(!file.exists(paste(oDir, "/fut_suit_change_", rcp, ".tif", sep=""))){
+  if(!file.exists(paste(oDir, "/fut_suit_change_", ssp, ".tif", sep=""))){
     
     id <- rep("", nlayers(rsStk))
     
@@ -55,8 +58,8 @@ for (rcp in rcpLs){
     myTheme$axis.line$col = 'gray'
     
     # Plot via levelplot
-    # tiff(paste(oDir, "/fut_suit_change_", rcp, "_3periods.tif", sep=""), width=12000, height=2500, pointsize=8, compression='lzw',res=600)
-    tiff(paste(oDir, "/fut_suit_change_", rcp, "_2periods.tif", sep=""), width=10000, height=3000, pointsize=8, compression='lzw',res=600)
+    # tiff(paste(oDir, "/fut_suit_change_", ssp, "_3periods.tif", sep=""), width=12000, height=2500, pointsize=8, compression='lzw',res=600)
+    tiff(paste(oDir, "/fut_suit_change_", ssp, "_2periods.tif", sep=""), width=10000, height=3000, pointsize=8, compression='lzw',res=600)
     
     
     print(levelplot(plot, at = zvalues, layout=c(6, 1), xlab="", ylab="", par.settings = myTheme,  colorkey = FALSE, names.attr=id) 
@@ -93,10 +96,10 @@ cDir <- "Z:/WORK_PACKAGES/WP2/05_EcoCrop_runs/outputs"
 oDir <- bDir
 zDir <- bDir
 
-rcpLs <- c("rcp26","rcp45","rcp60","rcp85")
-rcp <- "rcp85"
+sspLs <- c("ssp26","ssp45","ssp60","ssp85")
+ssp <- "ssp85"
 yearLs <- c("2020_2049","2040_2069", "2070_2099")
-# grdLs <- expand.grid(yearLs,rcpLs)
+# grdLs <- expand.grid(yearLs,sspLs)
 periodLs <- c("Current", "2030s", "2050s", "2080s")
 # List of simulated crops 
 cropLs <- c("cassava", "maize","plantain")
@@ -116,11 +119,11 @@ for (vr in vrLs){
   
   # Load current suitability 
   rsStk <- stack(c(paste0(cDir, "/", crop_experiment[1], "/runs/", crop_experiment[1], "_", vr, "suit.tif"), 
-                   paste0(uDir, "/mean_", crop_experiment[1], "_", rcp, "_", yearLs, "_", vr, "suit.tif"), 
+                   paste0(uDir, "/mean_", crop_experiment[1], "_", ssp, "_", yearLs, "_", vr, "suit.tif"), 
                    paste0(cDir, "/", crop_experiment[2], "/runs/", crop_experiment[2], "_", vr, "suit.tif"), 
-                   paste0(uDir, "/mean_", crop_experiment[2], "_", rcp, "_", yearLs, "_", vr, "suit.tif"), 
+                   paste0(uDir, "/mean_", crop_experiment[2], "_", ssp, "_", yearLs, "_", vr, "suit.tif"), 
                    paste0(cDir, "/", crop_experiment[3], "/runs/", crop_experiment[3], "_", vr, "suit.tif"), 
-                   paste0(uDir, "/mean_", crop_experiment[3], "_", rcp, "_", yearLs, "_", vr, "suit.tif")
+                   paste0(uDir, "/mean_", crop_experiment[3], "_", ssp, "_", yearLs, "_", vr, "suit.tif")
   )
   )
   
@@ -191,15 +194,15 @@ oDir <- bDir
 zDir <- bDir
 
 
-rcpLs <- c("rcp26", "rcp45", "rcp85")
-rcp <- "rcp85"
+sspLs <- c("ssp26", "ssp45", "ssp85")
+ssp <- "ssp85"
 period <- "2040_2069"
 gcm <- "ensemble"
 season <- "ann"
 cropLs <- c("cassava", "maize","plantain")
 cropNameLs <- c("Cassava", "Maize", "Plantain")
 crop_experiment <- c("cassava", "maize_eitzinger_kai", "plantain_reggata_german")
-grdLs <- expand.grid(rcpLs,crop_experiment)
+grdLs <- expand.grid(sspLs,crop_experiment)
 mask <- readOGR("D:/OneDrive - CGIAR/CIAT/Projects/lat_sal/00_zones/rg_poly_countries.shp", layer= "rg_poly_countries")
 
 fun <- function(x) { sd(x) }
@@ -210,16 +213,16 @@ fun <- function(x) { sd(x) }
 # lim <- extent(-80, -71, -11.5, 2.5)
 
   # Load current suitability 
-rsStk <- stack(c(paste0(uDir, "/sd_", crop_experiment[1], "_", rcp, "_", period, ".tif"), 
-                 calc(stack(paste0(uDir, "/mean_", crop_experiment[1], "_", rcpLs, "_", period, ".tif")), fun), 
-                 paste0(uDir, "/sd_", crop_experiment[2], "_", rcp, "_", period, ".tif"), 
-                 calc(stack(paste0(uDir, "/mean_", crop_experiment[2], "_", rcpLs, "_", period, ".tif")), fun), 
-                 paste0(uDir, "/sd_", crop_experiment[3], "_", rcp, "_", period, ".tif"), 
-                 calc(stack(paste0(uDir, "/mean_", crop_experiment[3], "_", rcpLs, "_", period, ".tif")), fun)
+rsStk <- stack(c(paste0(uDir, "/sd_", crop_experiment[1], "_", ssp, "_", period, ".tif"), 
+                 calc(stack(paste0(uDir, "/mean_", crop_experiment[1], "_", sspLs, "_", period, ".tif")), fun), 
+                 paste0(uDir, "/sd_", crop_experiment[2], "_", ssp, "_", period, ".tif"), 
+                 calc(stack(paste0(uDir, "/mean_", crop_experiment[2], "_", sspLs, "_", period, ".tif")), fun), 
+                 paste0(uDir, "/sd_", crop_experiment[3], "_", ssp, "_", period, ".tif"), 
+                 calc(stack(paste0(uDir, "/mean_", crop_experiment[3], "_", sspLs, "_", period, ".tif")), fun)
 )
 )
 
-id <- rep(c("GCM", "RCP"), 3)
+id <- rep(c("GCM", "ssp"), 3)
 
 # Plot settings
 plot <- setZ(rsStk, id)
