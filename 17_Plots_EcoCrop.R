@@ -1,6 +1,6 @@
-# Carlos Navarro 
-# CIAT - CCAFS
-# January 2017
+# Author: Carlos Navarro
+# UNIGIS 2023
+# Purpose: Plot suitability changes from EcoCrop runs and uncertainties
 
 ##############################
 ###### EcoCrop Plots  ########
@@ -13,6 +13,7 @@ require(rasterVis)
 require(maptools)
 require(latticeExtra)
 require(RColorBrewer)
+require(stringr)
 
 # Set params
 bDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/outputs"
@@ -28,17 +29,17 @@ id <- c("2030s SSP1-2.6", "2050s SSP1-2.6", "2070s SSP1-2.6",
         "2030s SSP5-8.5", "2030s SSP5-8.5", "2030s SSP5-8.5" 
 )
 
-
 # List of simulated crops 
 # cropLs <- list.dirs(path = bDir, full.names = F, recursive = F)
-# List of simulated crops 
 cropParamFile <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/crop-parameters/crop-parameters-select_msc.csv"
 cropPar <- read.csv(cropParamFile, header=T)
 cropLs <- names(cropPar)[-1]
 cropNameLs <- str_to_title(cropLs)
 grdLs <- expand.grid(yearLs,cropLs)
 perSSP <- expand.grid(yearLs, sspLs)
-cropLsMod <- c("Aguacate", "Banana", "Frijol", "Yuca", "Chile", "Citricos", "Cacao", "Cafe", "Maiz", "Platano", "Papa", "Arroz", "Yuca", "Tomate")
+cropLsMod <- c("Aguacate", "Banana", "Frijol", "Yuca", "Chile", "Cítricos", "Cacao", "Café", "Maíz", "Plátano", "Papa", "Arroz", "Caña de Azúcar", "Tomate")
+
+## Plot suit changes
 
 for(crop in cropLs){
   
@@ -75,7 +76,7 @@ for(crop in cropLs){
                     layout=c(3, 3), 
                     main="",
                     xlab="",
-                    ylab=list(paste(c(sspLsMod), sep=""),side=1,line=0.5, cex=1),
+                    ylab=list(paste(rev(c(sspLsMod)), sep=""),side=1,line=0.5, cex=1),
                     # par.strip.text=list(cex=0),
                     par.settings = myTheme, 
                     colorkey = list(space = "bottom", width=1.2, height=1)
@@ -90,23 +91,17 @@ for(crop in cropLs){
 }
 
 
-
-
-# Plot uncertainty
+## Plot uncertainty
 stats <- c("mean", "mean-bottom25p", "mean-top25p", "agreement", "sd")
-
-if(!file.exists(oDir)){
-  dir.create(oDir, recursive = T)
-}
 
 for (ssp in sspLs){
 
-  for (period in periodLs){
+  for (period in yearLs){
 
     for(stati in stats){
 
       if (stati == "agreement"){
-        zvalues <- seq(0, 16, 1) # Define limits
+        zvalues <- seq(0, 24, 1) # Define limits
         myTheme <- BuRdTheme() # Define squeme of colors
         myTheme$regions$col=colorRampPalette(c("yellow", "orange", "blue")) # Set new colors
 
@@ -149,6 +144,4 @@ for (ssp in sspLs){
     }
   }
 }
-
-
 

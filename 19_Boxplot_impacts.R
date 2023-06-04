@@ -1,25 +1,33 @@
-###########################################################################################
-## Boxplots for overall suitability change, PIA/NIA ratio, percent change in suitable area
-## Author: Carlos Navarro, Marcela Beltran
-## Based on previous J. Ramirez-Villegas script
-###########################################################################################
+# Author: Carlos Navarro
+# UNIGIS 2023
+# Purpose: Boxplots for overall suitability change, PIA/NIA ratio, percent change in suitable area (based in JRamirez codes)
 
 # Set libraries
-library(lubridate); library(ggplot2); library(reshape); library(Rcmdr); library(maptools)
+library(lubridate)
+library(ggplot2)
+library(reshape)
+library(Rcmdr)
+library(maptools)
+source("./src-ecocrop/createMask.R")
+source("./src-ecocrop/impacts.R")
 
 # Set parameteres
-cropLs <- c("cassava", "maize", "plantain")
-cropLs_names <- c("Cassava", "Maize", "Plantain")
-crop_experiment <- c("cassava", "maize_eitzinger_kai", "plantain_reggata_german")
-iDir <- "Z:/WORK_PACKAGES/WP2/05_EcoCrop_runs/impact"
-oDir <- "D:/OneDrive - CGIAR/CIAT/Articles/mbeltran_crop_exposure/boxplots"
-rDir <- "Z:/WORK_PACKAGES/WP2/05_EcoCrop_runs/outputs"
-shpSubLevel <- "Z:/WORK_PACKAGES/WP2/00_geodata/tnc_terrestial_ecoregions_napo.shp"
+iDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/impact"
+oDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/evaluation/suit_change"
+rDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/outputs"
+shpSubLevel <- "E:/Tortillas/TORII/EcoCrop_runs/00_admin_data/CAMEXCA_adm0.shp"
 shp <- readShapePoly(shpSubLevel)
+reg <- "camexca"
+
+cropParamFile <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/crop-parameters/crop-parameters-select_msc.csv"
+cropPar <- read.csv(cropParamFile, header=T)
+cropLs <- names(cropPar)[-1]
+crop_experiment <- str_to_title(cropLs)
+cropLs_names <- c("Aguacate", "Banana", "Frijol", "Yuca", "Chile", "Cítricos", "Cacao", "Café", "Maíz", "Plátano", "Papa", "Arroz", "Caña de Azúcar", "Tomate")
 
 if(!file.exists(oDir)){  dir.create(oDir, recursive = T)}
 
-f_names <- list("rcp26"="RCP 2.6", "rcp45"="RCP 4.5", "rcp85"="RCP 8.5")
+f_names <- list("ssp_126"="SSP1-2.6", "ssp_245"="SSP2-4.5", "ssp_585"="SSP5-8.5")
 f_labeller <- function(variable, value){return(f_names[value])}
 flabel <- "Average suitablility change (%)"
 
@@ -54,13 +62,13 @@ crop_stat <- data.frame()
 for (i in 1:length(cropLs)){
   
   ## Define output metrics file
-  mFile <- read.csv(paste0(iDir, "/", "impacts-amz-sub_", cropLs[i], ".csv"))
+  mFile <- read.csv(paste0(iDir, "/impacts-", cropLs[i], "/impacts-", reg, "-sub.csv"))
   mFile <- mFile[which(mFile$THRESHOLD == 50), ]
   mFile <- mFile[which(mFile$SCEN == "no.mig"), ]
-  ##mFile <- aggregate (cbind(AV.SUIT.CHG, AV.SUIT.INC, AV.SUIT.DEC)  ~RCP+PERIOD+GCM , FUN = mean, data = mFile) 
-  mFile <- mFile[!(mFile$RCP == "rcp60"), ]
+  ##mFile <- aggregate (cbind(AV.SUIT.CHG, AV.SUIT.INC, AV.SUIT.DEC)  ~SSP+PERIOD+GCM , FUN = mean, data = mFile) 
+  # mFile <- mFile[!(mFile$SSP == "SSP60"), ]
   
-  csr <- raster(paste0(rDir, "/", crop_experiment[i], "/runs/", crop_experiment[i], "_suit.tif"))
+  csr <- raster(paste0(rDir, "/", cropLs[i], "/runs/", cropLs[i], "_suit.tif"))
   ca <- suitArea(csr, shp)
   ca <- as.data.frame(ca)
   ca <- ca[which(ca$THRESH==50),]
@@ -75,33 +83,33 @@ for (i in 1:length(cropLs)){
   crop_stat <- rbind(crop_stat, x)
 }
 
-write.csv(stats, paste(oDir, "/all_crops_stats_boxplot.csv", sep=""), row.names=F, quote=T)
+write.csv(crop_stat, paste(iDir, "/impacts-", reg, "-allcrops.csv", sep=""), row.names=F, quote=T)
 
 
 # Make the boxplots for three variables: 
-crop_stat <- read.csv(paste(oDir, "/all_crops_stats_boxplot.csv", sep=""), header = T)
-# crop_stat <- crop_stat[which(crop_stat$RCP == "rcp45"), ]
+crop_stat <- read.csv(paste(iDir, "/impacts-", reg, "-allcrops.csv", sep=""), header = T)
+# crop_stat <- crop_stat[which(crop_stat$SSP == "SSP45"), ]
 
 ##### Overall suitability changev #####
 
-if (!file.exists(paste0(iDir, "/osc_all_crops.tif"))) {
+if (!file.exists(paste0(oDir, "/osc_all_crops.tif"))) {
   
-  tiff(paste0(oDir, "/osc_all_crops.tif"), width=3000, height=1020, pointsize=20, compression='lzw',res=300)
+  tiff(paste0(oDir, "/osc_all_crops.tif"), width=4200, height=5400, pointsize=20, compression='lzw',res=300)
   
-  f <- ggplot(data=crop_stat, aes(x=CROP, y=AV.SUIT.CHG, fill=COUNTRY.x)) +
-    scale_fill_manual(values=c("white", "gray")) +
+  f <- ggplot(data=crop_stat, aes(x=CROP, y=AV.SUIT.CHG, fill=PERIOD)) +
+    scale_fill_manual(values=c("white", "gray", "darkgrey")) +
     # scale_x_discrete(labels= c("2030", "2050", "2080")) +
     # ggtitle(paste0(cropLs_names[i])) +  
     theme_bw() + 
     geom_boxplot(color="black", outlier.size = 1) +
     geom_hline(aes(yintercept=0), linetype = 2, size=0.5) +
-    facet_grid(~PERIOD, drop=T, scales="free_y")+ 
-    labs(x="Crop", y="OSC (%)") +
+    facet_grid(COUNTRY.x ~ ., drop=T, scales="fixed")+ 
+    labs(x="", y="Cambio de Idoneidad (%)") +
     theme(axis.ticks=element_line(color = "black"), 
           legend.title=element_blank(), 
           axis.title.y = element_text(size = 12, color="black"), 
           plot.title = element_text(size = 30), 
-          strip.text.y = element_blank(),
+          strip.text.y = element_text(size = 12, color="black"),
           strip.background = element_blank(),
           panel.border = element_rect(color = "black", fill = NA, size = 0.5),
           strip.text.x = element_blank(),
@@ -118,26 +126,26 @@ if (!file.exists(paste0(iDir, "/osc_all_crops.tif"))) {
 
 # PIA/NIA ratio
 
-if (!file.exists(paste0(iDir, "/pia_nia_ratio_all_crops.tif"))) {
+if (!file.exists(paste0(oDir, "/pia_nia_ratio_all_crops.tif"))) {
   
-  tiff(paste0(oDir, "/pia_nia_ratio_all_crops.tif"), width=2994, height=1020, pointsize=20, compression='lzw',res=300)
+  tiff(paste0(oDir, "/pia_nia_ratio_all_crops.tif"), width=4200, height=5400, pointsize=20, compression='lzw',res=300)
   
-  f <- ggplot(data=crop_stat, aes(x=CROP, y=PIA_NIA_RATIO, fill=COUNTRY.x)) +
-    scale_fill_manual(values=c("white", "gray")) +
+  f <- ggplot(data=crop_stat, aes(x=CROP, y=PIA_NIA_RATIO, fill=PERIOD)) +
+    scale_fill_manual(values=c("white", "gray", "darkgrey")) +
     # scale_x_discrete(labels= c("2030", "2050", "2080")) +
     # ggtitle(paste0(cropLs_names[i])) +  
     theme_bw() + 
     geom_boxplot(color="black", outlier.size = 1) +
-    # geom_hline(aes(yintercept=0), linetype = 2, size=0.5) +
-    facet_grid(~PERIOD, drop=T)+
-    coord_cartesian(ylim=c(0,100))+
+    geom_hline(aes(yintercept=1), linetype = 2, size=0.3) +
+    facet_grid(COUNTRY.x ~ ., drop=T, scales="fixed")+ 
+    coord_cartesian(ylim=c(0,1000))+
     scale_y_sqrt() +
-    labs(x="Crop", y="PIA / NIA") +
+    labs(x="", y="AIP/AIN") +
     theme(axis.ticks=element_line(color = "black"), 
           legend.title=element_blank(), 
           axis.title.y = element_text(size = 12, color="black"), 
           plot.title = element_text(size = 30), 
-          strip.text.y = element_blank(),
+          strip.text.y = element_text(size = 12, color="black"),
           strip.background = element_blank(),
           panel.border = element_rect(color = "black", fill = NA, size = 0.5),
           strip.text.x = element_blank(),
@@ -156,24 +164,26 @@ if (!file.exists(paste0(iDir, "/pia_nia_ratio_all_crops.tif"))) {
 # Percent change in suitable area
 # Calculate percent change in area (future-current)/current*100
 
-if (!file.exists(paste0(iDir, "/chg_area_all_crops.tif"))) {
+if (!file.exists(paste0(oDir, "/chg_area_all_crops.tif"))) {
   
-  tiff(paste0(oDir, "/chg_area_all_crops.tif"), width=2976, height=1020, units = "px", pointsize=12, compression='lzw',res=300)
+  tiff(paste0(oDir, "/chg_area_all_crops.tif"), width=4200, height=5400, units = "px", pointsize=20, compression='lzw',res=300)
   
-  f <- ggplot(data=crop_stat, aes(x=CROP, y=CHG.AREA, fill=COUNTRY.x)) +
-    scale_fill_manual(values=c("white", "gray")) +
+  f <- ggplot(data=crop_stat, aes(x=CROP, y=CHG.AREA, fill=PERIOD)) +
+    scale_fill_manual(values=c("white", "gray", "darkgrey")) +
     # scale_x_discrete(labels= c("2030", "2050", "2080")) +
     # ggtitle(paste0(cropLs_names[i])) +  
     theme_bw() + 
     geom_boxplot(color="black", outlier.size = 1) +
     # geom_hline(aes(yintercept=0), linetype = 2, size=0.5) +
-    facet_grid(~PERIOD, drop=T, scales="free_y")+ 
-    labs(x="Crop", y="CSA (%)") +
+    facet_grid(COUNTRY.x ~ ., drop=T, scales="fixed")+ 
+    coord_cartesian(ylim=c(0,160))+
+    scale_y_sqrt() +
+    labs(x="", y="Cambios en las áreas idóneas (%)") +
     theme(axis.ticks=element_line(color = "black"), 
           legend.title=element_blank(), 
           axis.title.y = element_text(size = 12, color="black"), 
           plot.title = element_text(size = 30), 
-          strip.text.y = element_blank(),
+          strip.text.y = element_text(size = 12, color="black"),
           strip.background = element_blank(),
           panel.border = element_rect(color = "black", fill = NA, size = 0.5),
           strip.text.x = element_blank(),

@@ -1,239 +1,142 @@
-#################################################################################
-require(raster);require(rgdal);require(maptools); require(rasterVis)
-#################################################################################
+# Author: Carlos Navarro
+# UNIGIS 2023
+# Purpose: Plot suitability changes reclassified
 
-iDir <- "Z:/WORK_PACKAGES/WP2/05_EcoCrop_runs/outputs"
-uDir <- "Z:/WORK_PACKAGES/WP2/05_EcoCrop_runs/uncertainties"
-oDir <- "Z:/WORK_PACKAGES/WP2/05_EcoCrop_runs/evaluation/suit_change_rec"
-eDir <- "Z:/WORK_PACKAGES/WP2/05_EcoCrop_runs/evaluation/suit_change_rec"
-cropLs <- c("maize_eitzinger_kai", "cassava", "plantain_reggata_german", "cocoa", "sugar_cane", "panela_cane", "palmito")
-id_crops <- c("Maize", "Cassava", "Plantain", "Cocoa", "Sugar Cane", "Panela Cane", "Palmito") #, " Beans", "Rice", "Cocoa", "Sugar Cane", "Panela Cane")
-# id <- c("2070s")
-rcpLs <- c("rcp26", "rcp45", "rcp60", "rcp85")
-# rcpLs <- c("rcp45")
-periodLs <- c("2020_2049", "2040_2069", "2070_2099")
-# periodLs <- c("2070_2099")
-mask <- readOGR("Z:/WORK_PACKAGES/WP2/00_zones/rg_poly_countries.shp", layer= "rg_poly_countries")
-mask_col <- extent(-79.5,-66.85,-5,7)
-# mask_caqueta <- readOGR("Z:/WORK_PACKAGES/WP2/00_zones/MGN_ADM_MPIO_GRAFICO.shp", layer="MGN_ADM_MPIO_GRAFICO")
-# adm_lim_col <- readOGR("Z:/WORK_PACKAGES/WP2/00_zones/COL1.shp", layer="COL1") 
-# mask_ctr <- readOGR("Z:/WORK_PACKAGES/WP2/00_zones/rg_poly_countries.shp", layer= "rg_poly_countries")
+###################################################
+###### EcoCrop Plots Changes Reclassified  ########
+###################################################
 
-if(!file.exists(eDir)){dir.create(eDir, recursive = T)}
+# Load libraries
+require(raster)
+require(rgdal)
+require(rasterVis)
+require(maptools)
+require(latticeExtra)
+require(RColorBrewer)
+require(stringr)
 
+# Set params
+bDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/outputs"
+iDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/impact"
+oDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/evaluation/suit_change"
+uDir <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/uncertainties"
+mask <- readOGR("E:/Tortillas/TORII/EcoCrop_runs/00_admin_data/CAMEXCA_adm0.shp")
 
+sspLs <- c("ssp_126", "ssp_245", "ssp_585")
+sspLsMod <- c("SSP1-2.6", "SSP2-4.5", "SSP5-8.5")
+yearLs <- c("2030s", "2050s", "2070s")
+id <- c("2030s SSP1-2.6", "2050s SSP1-2.6", "2070s SSP1-2.6", 
+        "2030s SSP2-4.5", "2050s SSP2-4.5", "2070s SSP2-4.5", 
+        "2030s SSP5-8.5", "2030s SSP5-8.5", "2030s SSP5-8.5" 
+)
 
+# List of simulated crops 
+# cropLs <- list.dirs(path = bDir, full.names = F, recursive = F)
+cropParamFile <- "E:/Tortillas/TORII/EcoCrop_runs/03_crop_impacts/crop-parameters/crop-parameters-select_msc.csv"
+cropPar <- read.csv(cropParamFile, header=T)
+cropLs <- names(cropPar)[-1]
+cropNameLs <- str_to_title(cropLs)
+grdLs <- expand.grid(yearLs,cropLs)
+perSSP <- expand.grid(yearLs, sspLs)
+cropLsMod <- c("Aguacate", "Banana", "Frijol", "Yuca", "Chile", "Cítricos", "Cacao", "Café", "Maíz", "Plátano", "Papa", "Arroz", "Caña de Azúcar", "Tomate")
 
-### All crops in one plot
-
-# Plot settings
-zvalues <- seq(0, 5, 1) # Define limits
-myTheme <- BuRdTheme() # Define squeme of colors
-myTheme$regions$col=colorRampPalette(c("red", "orange", "yellow", "green", "darkgreen")) # Set new colors
-myTheme$strip.border$col = "white" # Eliminate frame from maps
-myTheme$axis.line$col = 'white' # Eliminate frame from maps
-# myTheme=rasterTheme(region=brewer.pal('Blues', n=9))  
-
-
-for (rcp in rcpLs){
+## Plot suit changes
+for (crop in cropLs){
   
-  for (period in periodLs){
+  for (ssp in sspLs){
     
-    for (crop in cropLs){
+    for (period in yearLs){
       
-      cat(crop, rcp, period, "\n")
+      cat(crop, ssp, period, "\n")
       
-      if(!file.exists(paste0(oDir, "/impacts-", crop, "/suitchg_", rcp, "-", period, ".tif"))){
+      if(!file.exists(paste0(iDir, "/impacts-", crop, "/suitchg_", ssp, "-", period, ".tif"))){
         
-        current = raster(paste0(iDir, "/", crop, "/runs/", crop, "_suit.tif", sep=""))
-        future = raster(paste0(uDir, "/mean_", crop, "_", rcp, "_", period,".tif", sep=""))
+        suitH <- raster(paste0(bDir, "/", crop, "/runs/", crop, "_suit.tif"))
+        suitF <- raster(paste0(uDir, "/mean_", crop, "_", ssp, "_", period,".tif", sep=""))
+        # 
+        #         if (crop == "cassava"){
+        #           thr <- 94
+        #         } else if (crop == "cotton") {
+        #           thr <- 60
+        #         } else {
+        #           thr <- 50
+        #         }
         
-        if (crop == "cassava"){
-          thr <- 94
-        } else if (crop == "cotton") {
-          thr <- 60
-        } else {
-          thr <- 50
-        }
+        thr <- 50
         
         #Analysis
-        outCon1 = ((current >= thr) & (future  <  thr)) #Areas nolong suitable (RED)
+        outCon1 = ((suitH >= thr) & (suitF  <  thr)) #Areas nolong suitable (RED)
         outCon1[!outCon1]=NA
         outCon1[!is.na(outCon1)]=1
         
-        outCon2 = (current >= thr) & (future >= thr) & ((future - current) < 0) #Areas suitable but less suitable inthe fut? (ORANGE)
+        outCon2 = (suitH >= thr) & (suitF >= thr) & ((suitF - suitH) < 0) #Areas suitable but less suitable inthe fut? (ORANGE)
         outCon2[!outCon2]=NA
         outCon2[!is.na(outCon2)]=2
         
-        outCon3 = (current >= thr) & (future >= thr) & ((future - current) == 0) #Areas suitable and same suitability in the future (YELLOW)
+        outCon3 = (suitH >= thr) & (suitF >= thr) & ((suitF - suitH) == 0) #Areas suitable and same suitability in the suitF (YELLOW)
         outCon3[!outCon3]=NA
         outCon3[!is.na(outCon3)]=3
         
-        outCon4  = ((current < thr) & (future >= thr)) #New Areas of suitability (LIGHT GREEN)
+        outCon4  = ((suitH < thr) & (suitF >= thr)) #New Areas of suitability (LIGHT GREEN)
         outCon4[!outCon4]=NA#Tells R to give all regions except specified region NA
         outCon4[!is.na(outCon4)]=4 #Gives each region a value of 1 
         
-        outCon5 = (current >= thr) & (future >= thr) & ((future - current) > 0) #Areas Suitable and more suitable in the fut (DARK GREEN)
+        outCon5 = (suitH >= thr) & (suitF >= thr) & ((suitF - suitH) > 0) #Areas Suitable and more suitable in the fut (DARK GREEN)
         outCon5[!outCon5]=NA
         outCon5[!is.na(outCon5)]=5
         
         ###Merge Layers
         
         pieced_fextent = merge(outCon1,outCon2,outCon3,outCon4,outCon5)
-        #plot(pieced_fextent)
-        if(!file.exists(paste0(oDir, "/impacts-", crop))){
-          dir.create(paste0(oDir, "/impacts-", crop), recursive = T)
-          }
-        writeRaster(pieced_fextent,paste0(oDir, "/impacts-", crop, "/suitchg_", rcp, "-", period, ".tif"))
+        writeRaster(pieced_fextent,paste0(iDir, "/impacts-", crop, "/suitchg_", ssp, "-", period, ".tif"))
         
       }
       
     }
     
+  }
+  
+}
+
+
+for(crop in cropLs){
+  
+  if(!file.exists(paste(oDir, "/suitchgrec_", crop, ".tif", sep=""))){
     
-    stk_crop <- stack(paste0(oDir, "/impacts-", cropLs, "/suitchg_", rcp, "-", period, ".tif"))
-    stk_crop_msk <- crop(stk_crop, mask_col)
+    suitChgR <- stack(paste0(iDir, "/impacts-", crop, "/suitchg_", perSSP[,2], "-", perSSP[,1], ".tif"))
+    suitChgR <- mask(crop(suitChgR, extent(mask)), mask)
+
+    # Plot settings
+    plot <- setZ(suitChgR, id)
+    names(plot) <- id
+    zvalues <- seq(0, 5, 1) # Define limits
+    myTheme <- BuRdTheme() # Define squeme of colors
+    myTheme$regions$col=colorRampPalette(c("red", "orange", "yellow", "green", "darkgreen")) # Set new colors
+    myTheme$strip.border$col = "white" # Eliminate frame from maps
+    myTheme$axis.line$col = 'white' # Eliminate frame from maps
+    # myTheme=rasterTheme(region=brewer.pal('Blues', n=9))  
     
-    plot <- setZ(stk_crop, id_crops)
-    names(plot) <- id_crops
     
-    tiff(paste(eDir, "/suitchg_", rcp, "-", period, ".tif", sep=""), width=600*length(cropLs), height=1000, pointsize=8, compression='lzw',res=100)
+    # Plot via levelplot
+    tiff(paste(oDir, "/suitchgrec_", crop, ".tif", sep=""), width=1200, height=850, pointsize=8, compression='lzw',res=100)
     
-    print(levelplot(plot, at = zvalues, scales = list(draw=FALSE),  xlab="", ylab="", par.settings = myTheme, colorkey = list(space = "bottom"), main=paste0("Suitability change ", rcp, " ", period)) + layer(sp.polygons(mask)) ) # + layer(sp.polygons(adm_lim_col)) + layer(sp.polygons(mask_caqueta, col = "red")) )
+    print(levelplot(plot, at = zvalues,  
+                    scales = list(draw=FALSE), 
+                    names.attr=c(yearLs, rep("", length(id)-3)),
+                    layout=c(3, 3), 
+                    main="",
+                    xlab="",
+                    ylab=list(paste(rev(c(sspLsMod)), sep=""),side=1,line=0.5, cex=1),
+                    # par.strip.text=list(cex=0),
+                    labels=as.character(c("Areas no longer suitable", "Areas less suitable in the suitF", "Same suitability in the suitF", "New Areas of suitability", "Areas more suitable in the suitF")),
+                    par.settings = myTheme, 
+                    colorkey = list(space = "bottom", width=1.2, height=1)
+    )
+    + layer(sp.polygons(mask, lwd=0.8))
+    )
     
     dev.off()
     
-    
   }
   
 }
-
-
-
-### Plot by 1 crop
-
-for (rcp in rcpLs){
-  
-  for (c in 1:length(cropLs)){
-    
-    crop <- cropLs[c]
-    crop_label <- id_crops[c]
-    
-    for (period in periodLs){
-      
-      cat(crop, rcp, period, "\n")
-      
-      if(!file.exists(paste0(oDir, "/impacts-", crop, "/suitchg_", rcp, "-", period, ".tif"))){
-        
-        current = raster(paste0(iDir, "/", crop, "/runs/", crop, "_suit.tif", sep=""))
-        future = raster(paste0(uDir, "/mean_", crop, "_", rcp, "_", period,".tif", sep=""))
-        
-        if (crop == "cassava"){
-          thr <- 94
-        } else if (crop == "cotton") {
-          thr <- 60
-        } else {
-          thr <- 50
-        }
-        
-        #Analysis
-        outCon1 = ((current >= thr) & (future  <  thr)) #Areas nolong suitable (RED)
-        outCon1[!outCon1]=NA
-        outCon1[!is.na(outCon1)]=1
-        
-        outCon2 = (current >= thr) & (future >= thr) & ((future - current) < 0) #Areas suitable but less suitable inthe fut? (ORANGE)
-        outCon2[!outCon2]=NA
-        outCon2[!is.na(outCon2)]=2
-        
-        outCon3 = (current >= thr) & (future >= thr) & ((future - current) == 0) #Areas suitable and same suitability in the future (YELLOW)
-        outCon3[!outCon3]=NA
-        outCon3[!is.na(outCon3)]=3
-        
-        outCon4  = ((current < thr) & (future >= thr)) #New Areas of suitability (LIGHT GREEN)
-        outCon4[!outCon4]=NA#Tells R to give all regions except specified region NA
-        outCon4[!is.na(outCon4)]=4 #Gives each region a value of 1 
-        
-        outCon5 = (current >= thr) & (future >= thr) & ((future - current) > 0) #Areas Suitable and more suitable in the fut (DARK GREEN)
-        outCon5[!outCon5]=NA
-        outCon5[!is.na(outCon5)]=5
-        
-        ###Merge Layers
-        
-        pieced_fextent = merge(outCon1,outCon2,outCon3,outCon4,outCon5)
-        #plot(pieced_fextent)
-        if(!file.exists(paste0(oDir, "/impacts-", crop))){
-          dir.create(paste0(oDir, "/impacts-", crop), recursive = T)
-        }
-        writeRaster(pieced_fextent,paste0(oDir, "/impacts-", crop, "/suitchg_", rcp, "-", period, ".tif"))
-        
-      }
-      
-      
-      ### Changes
-      
-      oPlot <- paste(eDir, "/suitchg_", rcp, "-", tolower(crop_label), "-", id, ".tif", sep="")
-      if(!file.exists(oPlot)){
-        
-        # Plot settings
-        zvalues <- seq(0, 5, 1) # Define limits
-        myTheme <- BuRdTheme() # Define squeme of colors
-        myTheme$regions$col=colorRampPalette(c("red", "orange", "yellow", "green", "darkgreen")) # Set new colors
-        myTheme$strip.border$col = "white" # Eliminate frame from maps
-        myTheme$axis.line$col = 'white' # Eliminate frame from maps
-        # myTheme=rasterTheme(region=brewer.pal('Blues', n=9))  
-        
-        
-        stk_crop <- stack(paste0(oDir, "/impacts-", crop, "/suitchg_", rcp, "-", periodLs, ".tif"))
-        stk_crop_msk <- mask(crop(stk_crop, mask_col), adm_lim_col)
-        
-        plot <- setZ(stk_crop_msk, id)
-        names(plot) <- id
-        
-        tiff(paste(eDir, "/suitchg_", rcp, "-", tolower(crop_label), "-", id, ".tif", sep=""), width=900, height=800, pointsize=8, compression='lzw',res=100)
-        
-        print(levelplot(plot, at = zvalues, scales = list(draw=FALSE),  xlab="", ylab="", par.settings = myTheme, colorkey = list(space = "bottom"), 
-                        margin=FALSE,
-                        labels=as.character(c("Areas no longer suitable", "Areas less suitable in the future", "Same suitability in the future", "New Areas of suitability", "Areas more suitable in the future")),
-                        main=toupper(paste0("Suitability change ", rcp, " ", crop_label, " ", id))) + layer(sp.polygons(adm_lim_col)) + layer(sp.polygons(mask_caqueta, col = "red")) )
-        dev.off()
-      }
-      
-      
-      
-      ### Current
-      oPlot <- paste(eDir, "/suit_current-", tolower(crop_label), ".tif", sep="")
-      if(!file.exists(oPlot)){
-        
-      # Plot settings
-      zvalues <- seq(0, 100, 10) # Define limits
-      myTheme <- BuRdTheme() # Define squeme of colors
-      myTheme$regions$col=colorRampPalette(c("white", "green3", "darkgreen")) # Set new colors
-      myTheme$strip.border$col = "white" # Eliminate frame from maps
-      myTheme$axis.line$col = 'white' # Eliminate frame from maps
-      # myTheme=rasterTheme(region=brewer.pal('Blues', n=9))  
-      
-      
-      stk_crop <- stack(paste0(iDir, "/", crop, "/runs/", crop, "_suit.tif"))
-      stk_crop_msk <- mask(crop(stk_crop, mask_col), adm_lim_col)
-      
-      
-      plot <- setZ(stk_crop_msk, c("Current"))
-      names(plot) <- c("Current")
-      
-      tiff(oPlot, width=900, height=800, pointsize=8, compression='lzw',res=100)
-      
-      print(levelplot(plot, at = zvalues, scales = list(draw=FALSE),  xlab="", ylab="", par.settings = myTheme, colorkey = list(space = "bottom"), 
-                      margin=FALSE,
-                      main=toupper(paste0("Current Suitability ", crop_label))) + layer(sp.polygons(adm_lim_col)) + layer(sp.polygons(mask_caqueta, col = "red")) )
-      dev.off()
-      
-      }
-      
-      
-    }
-    
-  }
-  
-}
-
-
