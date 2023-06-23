@@ -93,19 +93,19 @@ for(threshold in thresLs){
           cat("   - Monfreda ocurrence data loaded \n")
           
         }
-        
-        # Load cropgrid presence area 
-        if(file.exists(paste0(cropgDir, "/CROPGRIDSv1.05_", cropEq$Monfreda, ".nc"))){
-          
-          cropg <- raster(paste0(cropgDir, "/CROPGRIDSv1.05_", cropEq$Monfreda, ".nc"), layer="harvarea")
-          cropg <- mask(crop(cropg, extent(mask)), mask_ctr)/8574.76 #to calculate fraction area
-          cropg[which(cropg[] <= threshold)] = NA
-          cropgP <- rasterToPoints(cropg)
-          # points(rasterToPoints(ispam), cex=0.1, col = "blue")
-          
-          cat("   - Cropgrid ocurrence data loaded \n")
-          
-        }
+        # 
+        # # Load cropgrid presence area 
+        # if(file.exists(paste0(cropgDir, "/CROPGRIDSv1.05_", cropEq$Monfreda, ".nc"))){
+        #   
+        #   cropg <- raster(paste0(cropgDir, "/CROPGRIDSv1.05_", cropEq$Monfreda, ".nc"), layer="harvarea")
+        #   cropg <- mask(crop(cropg, extent(mask)), mask_ctr)/8574.76 #to calculate fraction area
+        #   cropg[which(cropg[] <= threshold)] = NA
+        #   cropgP <- rasterToPoints(cropg)
+        #   # points(rasterToPoints(ispam), cex=0.1, col = "blue")
+        #   
+        #   cat("   - Cropgrid ocurrence data loaded \n")
+        #   
+        # }
         
         # Load ispam presence area (if exits)
         if(file.exists(paste0(ispamDir, "/spam2010V2r0_global_H_", toupper(cropEq$spam_2010), "_R.tif"))){
